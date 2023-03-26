@@ -16,4 +16,4 @@ spec:
     volumeMode: Filesystem
   source:
     http:
-      url: http://installhost.example.com:8080/win2k19.iso
+      url: https://go.microsoft.com/fwlink/p/?LinkID=2195167&clcid=0x409&culture=en-us&country=US
