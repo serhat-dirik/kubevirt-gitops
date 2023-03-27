@@ -15,7 +15,6 @@ metadata:
         }
       ]
   name: fedora-gitops1
-  namespace: vms-demo
   labels:
     app: fedora-gitops1
     vm.kubevirt.io/template: fedora-server-small
