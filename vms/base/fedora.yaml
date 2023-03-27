@@ -26,6 +26,7 @@ spec:
       name: fedora-gitops1
     spec:
       pvc:
+        storageClassName: ocs-storagecluster-ceph-rbd
         accessModes:
         - ReadWriteMany
         resources:
