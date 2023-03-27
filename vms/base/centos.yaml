@@ -2,6 +2,8 @@ apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
   annotations:
+    kubevirt.io/latest-observed-api-version: v1
+    kubevirt.io/storage-observed-api-version: v1alpha3
     vm.kubevirt.io/validations: |
       [
         {
@@ -9,42 +11,43 @@ metadata:
           "path": "jsonpath::.spec.domain.resources.requests.memory",
           "rule": "integer",
           "message": "This VM requires more memory.",
-          "min": 1610612736
+          "min": 1073741824
         }
       ]
+  name: centos7-gitops1
   labels:
-    app: centos-gitops1
-    vm.kubevirt.io/template: centos8-server-small
-    vm.kubevirt.io/template.revision: "1"
-    vm.kubevirt.io/template.version: v0.14.0
-  name: centos-gitops1
+    app: centos7-gitops1
+    vm.kubevirt.io/template: centos7-server-small
+    vm.kubevirt.io/template.namespace: openshift
+    vm.kubevirt.io/template.revision: '1'
+    vm.kubevirt.io/template.version: v0.23.4
 spec:
   dataVolumeTemplates:
-  - apiVersion: cdi.kubevirt.io/v1beta1
-    kind: DataVolume
-    metadata:
-      name: centos-gitops1
-    spec:
-      pvc:
-        storageClassName: ocs-storagecluster-ceph-rbd
-        accessModes:
-        - ReadWriteMany
-        resources:
-          requests:
-            storage: 30Gi
-      source:
-        pvc:
-          name: centos8
+    - apiVersion: cdi.kubevirt.io/v1beta1
+      kind: DataVolume
+      metadata:
+        creationTimestamp: null
+        name: centos7-gitops1
+      spec:
+        sourceRef:
+          kind: DataSource
+          name: centos7
           namespace: openshift-virtualization-os-images
+        storage:
+          resources:
+            requests:
+              storage: 30Gi
+          storageClassName: ocs-storagecluster-ceph-rbd
   running: true
   template:
     metadata:
       annotations:
         vm.kubevirt.io/flavor: small
-        vm.kubevirt.io/os: centos8
+        vm.kubevirt.io/os: centos7
         vm.kubevirt.io/workload: server
+      creationTimestamp: null
       labels:
-        kubevirt.io/domain: centos-gitops1
+        kubevirt.io/domain: centos7-gitops1
         kubevirt.io/size: small
     spec:
       domain:
@@ -54,35 +57,39 @@ spec:
           threads: 1
         devices:
           disks:
-          - disk:
-              bus: virtio
-            name: centos-gitops1
-          - disk:
-              bus: virtio
-            name: cloudinitdisk
+            - disk:
+                bus: virtio
+              name: rootdisk
+            - disk:
+                bus: virtio
+              name: cloudinitdisk
           interfaces:
-          - masquerade: {}
-            name: default
+            - masquerade: {}
+              name: default
           networkInterfaceMultiqueue: true
           rng: {}
         machine:
-          type: pc-q35-rhel8.4.0
+          type: pc-q35-rhel8.6.0
         resources:
           requests:
             memory: 2Gi
       evictionStrategy: LiveMigrate
       networks:
-      - name: default
-        pod: {}
+        - name: default
+          pod: {}
       terminationGracePeriodSeconds: 180
+      tolerations:
+        - effect: NoSchedule
+          key: metal
+          operator: Exists
       volumes:
-      - dataVolume:
-          name: centos-gitops1
-        name: centos-gitops1
-      - cloudInitNoCloud:
-          userData: |-
-            #cloud-config
-            user: centos
-            password: 30jt-pghb-jj0i
-            chpasswd: { expire: False }
-        name: cloudinitdisk
+        - dataVolume:
+            name: centos7-gitops1
+          name: rootdisk
+        - cloudInitNoCloud:
+            userData: |-
+              #cloud-config
+              user: centos
+              password: redhat1!
+              chpasswd: { expire: False }
+          name: cloudinitdisk
