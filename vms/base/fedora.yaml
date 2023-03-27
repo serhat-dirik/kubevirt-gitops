@@ -26,6 +26,9 @@ spec:
   dataVolumeTemplates:
     - apiVersion: cdi.kubevirt.io/v1beta1
       kind: DataVolume
+      metadata:
+        creationTimestamp: null
+        name: fedora-gitops1
       spec:
         sourceRef:
           kind: DataSource
@@ -35,6 +38,7 @@ spec:
           resources:
             requests:
               storage: 30Gi
+          storageClassName: ocs-storagecluster-ceph-rbd
   running: true
   template:
     metadata:
@@ -42,6 +46,7 @@ spec:
         vm.kubevirt.io/flavor: small
         vm.kubevirt.io/os: fedora
         vm.kubevirt.io/workload: server
+      creationTimestamp: null
       labels:
         kubevirt.io/domain: fedora-gitops1
         kubevirt.io/size: small
